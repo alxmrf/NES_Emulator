@@ -8,14 +8,21 @@
 
 class olc6502
 {
-public:
-    olc6502();
-    ~olc6502();
 
+//essentials to the making of the CPU class
+public:
+
+    //declaring the constructor
+    olc6502();
+    //declaring the deconstructor
+    ~olc6502();
+    //makes the connection to the bus
     void ConnectBus(Bus *n){ bus = n;}
 
-
+//Declaring the CPU registers and flags, used in the internal functioning of the CPU 
 public:
+
+    //Declaration of the CPU flags
     enum FLAGS6502
     {
         C = (1<<0), //Bit that represents carrying in a rithmetic operation
@@ -29,23 +36,33 @@ public:
     }
 
     //registers
-    uint8_t a = 0x00 // acuumulator register
+    uint8_t a = 0x00 // accumulator register
     uint8_t x = 0x00 // X register
     uint8_t y = 0x00// Y register
     uint8_t stkp = 0x00 //Stack pointer (Points to a location in the stack)
     uint16_t pc = 0x0000 //Program counter
     uint8_t status = 0x00 // Status Register
 
-
+//declaring fuctions and connections that are related to the Bus 
 private:
-    Bus *buspnt = nullptr;
+
+    BUS *buspnt = nullptr; //Pointer to the BUS
+
+
+    //functions that read and write data from/to the bus 
     uint8_t read(uint16_t addr);
     void write(uint_16 addr, uint8_t data);
 
-    //Convenience function to access status registers
-
-    uint8_t GetFlag(FLAGS6502 f);
-    void SetFlag(FLAGS6502 f, bool v);
+//Declares the Struct that instructions to the CPU must follow 
+private:
+    struct INSTRUCTION
+    {
+        std::string name; //name of the instruction
+        uint8_t(olc6502::*operate)(void) = nullptr; //pointer to which operator the instruction will call
+        uint8_t(olc6502::*addrmode)(void) = nullptr; //pointe to which addressing mode the CPU will use 
+        uint8_t cycles= 0;//indicator of how many Cycles the CPU will take to realize the instruction   
+    };
+    
 
 private:
     //CPU addressing modes 
@@ -86,17 +103,22 @@ private:
 
 
     //assistive variables to facilitate emulation
-
-    uint8_t fetch();
-
-
     uint8_t fetched = 0x00;
     uint16_t temp = 0x0000;
     uint16_t addr_abs = 0x0000;
     uint16_t addr_rel = 0x0000;
     uint8_t OPCODE = 0x00;
-    uint8_t cycles = 0; 
+    uint8_t cycles = 0; // cycles of the clock function
     uint32_t clock_count = 0;
+
+//MISC functions
+private:
+    //Convenience function to access status registers
+    uint8_t GetFlag(FLAGS6502 f);
+    void SetFlag(FLAGS6502 f, bool v);
+
+    //function to facilitate emulation 
+    uint8_t fetch();
 
 
 
